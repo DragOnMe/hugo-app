@@ -1,0 +1,38 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: hugo-app-rolling-update
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 1       # One by one
+      maxUnavailable: 0 # Wait for a new pod before killing one pod
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: hugo-app-rolling-update
+    spec:
+      containers:
+        - name: hugo-app
+          image: drlee001/hugo-app:red
+          ports:
+            - containerPort: 80
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hugo-app-rolling-update-svc
+  labels:
+    app: hugo-app
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  selector:
+    app: hugo-app-rolling-update
